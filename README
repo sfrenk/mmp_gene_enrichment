@@ -1,0 +1,7 @@
+mmp_app.R: Stand alone R script that can be run on the command line. I am using this to do analyses while I work on the full app
+
+mmp_app_shiny.R: Deals with the user interface and calls mmp_enrichment.R
+
+mmp_enrichment.R: Contains a function which does all the analysis. The idea is that you will be able to pass arguments to this function from either the command line or the shiny app
+
+mmp_command.R: This will be created at some point as a CLI for mmp_enrichment.R
