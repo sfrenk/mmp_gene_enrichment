@@ -3,24 +3,23 @@ suppressPackageStartupMessages(library(plyr))
 suppressPackageStartupMessages(library(biomaRt))
 suppressPackageStartupMessages(library(stringr))
 
-mmp_gene_enrichment <- function(input_strains, ncrna = FALSE, mmp) {
+mmp_gene_enrichment <- function(strains, ncrna = FALSE, censor = FALSE, mmp) {
 
     ## Variables
     
-    # Directory containing mmp_mutations.txt
-    #mmp_dir <- "./data"
-    
     # Strains to be removed from analysis due to missing data
-    filtered_strains = c("VC10116", "VC10118", "VC20007", "VC20009", "VC20495", "VC20507", "VC20539", "VC20543","VC40186", "VC40543", "VC20228", "VC20496", "VC20499", "VC20530", "VC20545")
     
+    if (censor) {
+        print("censoring strains for which sequencing data is missing")
+        filtered_strains = c("VC10116", "VC10118", "VC20007", "VC20009", "VC20495", "VC20507", "VC20539", "VC20543","VC40186", "VC40543", "VC20228", "VC20496", "VC20499", "VC20530", "VC20545")
+    } else {
+        filtered_strains = ""
+    }
     
     ## READ IN DATA
-    
-    # Read in mmp strain data (this file lists all detected mutations in each mmp strain)
-    #print("Reading in mmp mutation data...")
-    #mmp <- read.table(gzfile(paste0(mmp_dir, "/mmp_mutations.txt.gz")), sep = "\t", header = TRUE)
-    
+
     # Read in input strain list
+    input_strains <- unlist(str_extract_all(strains, "VC[0-9]+"))
     n_strains_input <- length(input_strains)
     
     # Select interesting mutations
@@ -30,10 +29,10 @@ mmp_gene_enrichment <- function(input_strains, ncrna = FALSE, mmp) {
     
     } else {
         print("Finding ncRNA loci...")
-        mmp <- mmp[mmp$effect %in% c("ncRNA", "piRNA", "miRNA", ''),]
+        mmp <- mmp[mmp$effect %in% c("ncRNA", "piRNA", "miRNA"),]
     
     }
-    
+
     # Keep important variables and remove duplicates and strains with missing data
     mmp <- mmp[c("strain", "CGC")]
     mmp <- mmp[!duplicated(mmp),]
@@ -95,6 +94,6 @@ mmp_gene_enrichment <- function(input_strains, ncrna = FALSE, mmp) {
     results_table$description <- sapply(results_table$description, function(x) str_replace(x, '[ ]*\\[Source:.*', ""))
     
     
-    return(head(results_table))
+    return(head(results_table, 10))
     print("Finished")
 }
