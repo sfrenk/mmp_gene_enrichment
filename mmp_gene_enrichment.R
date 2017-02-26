@@ -3,12 +3,12 @@ suppressPackageStartupMessages(library(plyr))
 suppressPackageStartupMessages(library(biomaRt))
 suppressPackageStartupMessages(library(stringr))
 
-mmp_enrichment <- function(input_strains, ncrna = FALSE) {
+mmp_gene_enrichment <- function(input_strains, ncrna = FALSE, mmp) {
 
     ## Variables
     
     # Directory containing mmp_mutations.txt
-    mmp_dir <- "/home/sfrenk/Documents/Resources/mmp"
+    #mmp_dir <- "./data"
     
     # Strains to be removed from analysis due to missing data
     filtered_strains = c("VC10116", "VC10118", "VC20007", "VC20009", "VC20495", "VC20507", "VC20539", "VC20543","VC40186", "VC40543", "VC20228", "VC20496", "VC20499", "VC20530", "VC20545")
@@ -17,14 +17,14 @@ mmp_enrichment <- function(input_strains, ncrna = FALSE) {
     ## READ IN DATA
     
     # Read in mmp strain data (this file lists all detected mutations in each mmp strain)
-    print("Reading in mmp mutation data...")
-    mmp <- read.table(paste0(mmp_dir, "/mmp_mutations.txt"), sep = "\t", header = TRUE)
+    #print("Reading in mmp mutation data...")
+    #mmp <- read.table(gzfile(paste0(mmp_dir, "/mmp_mutations.txt.gz")), sep = "\t", header = TRUE)
     
     # Read in input strain list
     n_strains_input <- length(input_strains)
     
     # Select interesting mutations
-    if (!opts$ncrna) {
+    if (!ncrna) {
         print("Finding protein coding genes...")
         mmp <- mmp[!(mmp$effect %in% c("synonymous", "ncRNA")) & ((mmp$feature == "coding_exon") | (mmp$effect == "splicing")),]
     
@@ -77,6 +77,8 @@ mmp_enrichment <- function(input_strains, ncrna = FALSE) {
     mmp_table <- mmp_table[order(mmp_table$pval_raw),]
     
     ## GET GENE DESCRIPTIONS USING BIOMART
+    print("getting gene descriptions")
+    
     mart <- useMart(biomart="ensembl", dataset="celegans_gene_ensembl")
     
     results <- getBM(attributes = c("external_gene_name", "description"), 
@@ -92,5 +94,7 @@ mmp_enrichment <- function(input_strains, ncrna = FALSE) {
     # The "description" attribute comes with source info, which isn't very useful, so we can get rid of this.
     results_table$description <- sapply(results_table$description, function(x) str_replace(x, '[ ]*\\[Source:.*', ""))
     
-    print(head(results_table))
+    
+    return(head(results_table))
+    print("Finished")
 }
