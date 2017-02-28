@@ -94,6 +94,7 @@ mmp_gene_enrichment <- function(strains, ncrna = FALSE, censor = FALSE, mmp) {
     results_table$description <- sapply(results_table$description, function(x) str_replace(x, '[ ]*\\[Source:.*', ""))
     
     
-    return(head(results_table, 10))
+    #return(head(results_table, 10))
+    return(results_table)
     print("Finished")
 }
